@@ -1,0 +1,19 @@
+service: create-bets-bolao
+
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+
+functions:
+  createBetsBolao:
+    handler: handler.handler
+    name: create-bets-bolao
+    events:
+      - httpApi:
+          method: POST
+          path: /create-bet
+    timeout: 60
+plugins:
+  - serverless-offline
