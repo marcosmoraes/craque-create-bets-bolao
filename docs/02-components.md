@@ -2,111 +2,119 @@
 
 ## Modelos de Dados
 
-### BetModel
-```javascript
-{
+### Bet
+```typescript
+interface Bet {
     fixture: {
-        bubbleId: String,
-        id: Number,
-        referee: String,
-        timezone: String,
-        date: Date,
-        timestamp: Number,
+        bubbleId: string;
+        id: number;
+        referee: string;
+        timezone: string;
+        date: string;
+        timestamp: number;
         periods: {
-            first: Number,
-            second: Number
-        },
+            first: string;
+            second: string;
+        };
         venue: {
-            id: Number,
-            name: String,
-            city: String
-        },
+            id: number;
+            name: string;
+            city: string;
+        };
         status: {
-            long: String,
-            short: String,
-            elapsed: Number
-        }
-    },
+            long: string;
+            short: string;
+            elapsed: number;
+        };
+    };
     league: {
-        id: Number,
-        name: String,
-        country: String,
-        logo: String,
-        flag: String,
-        season: Number,
-        round: String
-    },
-    bubbleId: String,
-    userId: String,
+        id: number;
+        name: string;
+        country: string;
+        logo: string;
+        flag: string;
+        season: number;
+        round: string;
+    };
+    bubbleId: string;
+    userId: string;
     betTeams: {
         home: {
-            teamId: Number,
-            teamName: String,
-            goals: Number
-        },
+            teamId: number;
+            teamName: string;
+            goals: number | null;
+        };
         away: {
-            teamId: Number,
-            teamName: String,
-            goals: Number
-        }
-    },
+            teamId: number;
+            teamName: string;
+            goals: number | null;
+        };
+    };
     goals: {
-        home: Number,
-        away: Number
-    },
-    pesoPorRodada: Number,
+        home: number;
+        away: number;
+    };
+    pesoPorRodada: number;
     pontosCategoria: {
-        placarPerdedor: Number,
-        acertouResultado: Number,
-        palpiteEstimulado: Number,
-        variacaoDoRankingEmRelacaoAPosicaoAnterior: Number,
-        tempoAcumulado: Number,
-        palpitesDoUsuario: Number
-    },
-    totalDePontos: Number
+        placarPerdedor: number;
+        acertouResultado: number;
+        palpiteEstimulado: number;
+        variacaoDoRankingEmRelacaoAPosicaoAnterior: number;
+        tempoAcumulado: number;
+        palpitesDoUsuario: number;
+    };
+    totalDePontos: number;
 }
 ```
 
 ## Serviços
 
-### BetService
-- Responsável pela lógica de negócio das apostas
-- Calcula pesos por rodada
-- Gerencia pontuações e categorias
+### BetService (service/bet-service.js)
+- `getRodada(round)`: Extrai o número da rodada da string
+- `calcularPesoPorRodada(rodada)`: Calcula o peso da rodada para pontuação
 
-### FootballAPI
-- Integração com API externa de futebol
-- Obtém dados de partidas e ligas
-- Gerencia autenticação e requisições
+### FootballAPI (api/football-api.js)
+- `getFixturesByLeagueAndSeason(leagueId, season)`: Obtém jogos da liga e temporada
+
+### DataAccess (data-access/mongodb.js)
+- `connectToDatabase(username, password, database)`: Conecta ao MongoDB
+- `findBolaoByBubbleId(bubbleId)`: Busca bolão pelo ID
 
 ## Data Access
 
 ### MongoDB
-- Conexão com banco de dados
-- Operações CRUD
-- Gerenciamento de coleções dinâmicas
+- Conexão configurada com credenciais do ambiente
+- Coleções dinâmicas por bolão (`bets-${bubbleId}`)
+- Índices para otimizar consultas por usuário e bolão
 
 ## Endpoints
 
 ### POST /create-bet
-- Cria novas apostas para um bolão
+- Método: POST
+- Handler: `handler.handler`
 - Parâmetros:
-  - leagueId: ID da liga
-  - season: Temporada
-  - bubbleId: ID do bolão
-  - userId: ID do usuário
+  - `leagueId`: ID da liga
+  - `season`: Temporada
+  - `bubbleId`: ID do bolão
+  - `userId`: ID do usuário
+- Retorna: Status da criação das apostas
 
 ## Fluxos de Processamento
 
 ### Criação de Apostas
-1. Validação de entrada
-2. Busca de dados da partida
-3. Criação do modelo de aposta
-4. Cálculo de pesos
-5. Persistência no banco
+1. Recebe parâmetros via POST
+2. Valida existência do bolão
+3. Obtém jogos da liga/temporada
+4. Cria modelo de apostas para o bolão
+5. Processa cada jogo:
+   - Cria aposta com dados do jogo
+   - Calcula peso da rodada
+   - Inicializa pontuações
+6. Salva apostas em paralelo
+7. Retorna status da operação
 
-### Cálculo de Pontuação
-1. Identificação da rodada
-2. Aplicação de pesos
-3. Cálculo de categorias
-4. Atualização de pontuação total 
+### Tratamento de Erros
+- Captura erros individuais por aposta
+- Agrupa apostas com falha
+- Retorna lista de apostas não criadas
+- Mantém transação atômica por aposta 
