@@ -11,11 +11,9 @@ graph TB
     subgraph "AWS Cloud"
         subgraph "API Gateway"
             APIG[API Gateway]
-            APIG_Route[Route: /pools]
-            APIG_Auth[Auth: JWT]
         end
 
-        subgraph "Lambda Functions"
+        subgraph "Lambda Function"
             Handler[Handler Lambda]
             Service[Service Layer]
             Model[Model Layer]
@@ -28,22 +26,10 @@ graph TB
             Bets[(Bets Collection)]
             Matches[(Matches Collection)]
         end
-
-        subgraph "SQS"
-            SQS_Queue[SQS Queue]
-            SQS_DeadLetter[Dead Letter Queue]
-        end
-
-        subgraph "CloudWatch"
-            CW_Logs[CloudWatch Logs]
-            CW_Metrics[CloudWatch Metrics]
-            CW_Alarms[CloudWatch Alarms]
-        end
     end
 
     %% External Services
     FootballAPI[Football API]
-    AuthService[Auth Service]
 
     %% Connections
     APIG -->|HTTP/REST| Handler
@@ -52,31 +38,19 @@ graph TB
     Model -->|Internal| DataAccess
     DataAccess -->|MongoDB Driver| Mongo
     
-    %% SQS Connections
-    SQS_Queue -->|Message| Handler
-    SQS_Queue -->|Failed Messages| SQS_DeadLetter
-    
     %% External Connections
     FootballAPI -->|HTTP/REST| Service
-    AuthService -->|JWT| APIG_Auth
-    
-    %% Monitoring
-    Handler -->|Logs| CW_Logs
-    Handler -->|Metrics| CW_Metrics
-    CW_Metrics -->|Alerts| CW_Alarms
 
     %% Styling
     classDef aws fill:#FF9900,stroke:#232F3E,stroke-width:2px;
     classDef lambda fill:#009900,stroke:#232F3E,stroke-width:2px;
     classDef db fill:#13aa52,stroke:#232F3E,stroke-width:2px;
     classDef external fill:#666666,stroke:#232F3E,stroke-width:2px;
-    classDef monitoring fill:#FF4D4D,stroke:#232F3E,stroke-width:2px;
 
-    class APIG,APIG_Route,APIG_Auth aws;
+    class APIG aws;
     class Handler,Service,Model,DataAccess lambda;
     class Mongo,Pools,Bets,Matches db;
-    class FootballAPI,AuthService external;
-    class CW_Logs,CW_Metrics,CW_Alarms monitoring;
+    class FootballAPI external;
 ```
 
 ## System Layers
@@ -84,7 +58,7 @@ graph TB
 ### 1. API Layer (api/)
 - Responsible for external service integration
 - Implements communication with the football API
-- Manages authentication and HTTP requests
+- Manages HTTP requests
 
 ### 2. Data Access Layer (data-access/)
 - Manages MongoDB connection
@@ -117,7 +91,6 @@ graph TB
 - Credentials stored in environment variables
 - Input data validation
 - Error and exception handling
-- Audit logs
 
 ## Scalability
 - Serverless architecture enables automatic scaling
