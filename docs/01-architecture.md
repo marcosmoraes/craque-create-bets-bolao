@@ -1,49 +1,125 @@
-# Arquitetura do Sistema
+# System Architecture
 
-## Visão Geral da Arquitetura
-O sistema segue uma arquitetura serverless, utilizando AWS Lambda como função principal. A arquitetura é dividida em camadas bem definidas para garantir separação de responsabilidades e manutenibilidade.
+## Overview
 
-## Camadas do Sistema
+The Create Bets Bolão service is a serverless application built with AWS Lambda and Serverless Framework. It provides functionality for creating and managing betting pools, processing user bets, and calculating results.
+
+## Architecture Diagram
+
+```mermaid
+graph TB
+    subgraph "AWS Cloud"
+        subgraph "API Gateway"
+            APIG[API Gateway]
+            APIG_Route[Route: /pools]
+            APIG_Auth[Auth: JWT]
+        end
+
+        subgraph "Lambda Functions"
+            Handler[Handler Lambda]
+            Service[Service Layer]
+            Model[Model Layer]
+            DataAccess[Data Access Layer]
+        end
+
+        subgraph "MongoDB"
+            Mongo[(MongoDB)]
+            Pools[(Pools Collection)]
+            Bets[(Bets Collection)]
+            Matches[(Matches Collection)]
+        end
+
+        subgraph "SQS"
+            SQS_Queue[SQS Queue]
+            SQS_DeadLetter[Dead Letter Queue]
+        end
+
+        subgraph "CloudWatch"
+            CW_Logs[CloudWatch Logs]
+            CW_Metrics[CloudWatch Metrics]
+            CW_Alarms[CloudWatch Alarms]
+        end
+    end
+
+    %% External Services
+    FootballAPI[Football API]
+    AuthService[Auth Service]
+
+    %% Connections
+    APIG -->|HTTP/REST| Handler
+    Handler -->|Internal| Service
+    Service -->|Internal| Model
+    Model -->|Internal| DataAccess
+    DataAccess -->|MongoDB Driver| Mongo
+    
+    %% SQS Connections
+    SQS_Queue -->|Message| Handler
+    SQS_Queue -->|Failed Messages| SQS_DeadLetter
+    
+    %% External Connections
+    FootballAPI -->|HTTP/REST| Service
+    AuthService -->|JWT| APIG_Auth
+    
+    %% Monitoring
+    Handler -->|Logs| CW_Logs
+    Handler -->|Metrics| CW_Metrics
+    CW_Metrics -->|Alerts| CW_Alarms
+
+    %% Styling
+    classDef aws fill:#FF9900,stroke:#232F3E,stroke-width:2px;
+    classDef lambda fill:#009900,stroke:#232F3E,stroke-width:2px;
+    classDef db fill:#13aa52,stroke:#232F3E,stroke-width:2px;
+    classDef external fill:#666666,stroke:#232F3E,stroke-width:2px;
+    classDef monitoring fill:#FF4D4D,stroke:#232F3E,stroke-width:2px;
+
+    class APIG,APIG_Route,APIG_Auth aws;
+    class Handler,Service,Model,DataAccess lambda;
+    class Mongo,Pools,Bets,Matches db;
+    class FootballAPI,AuthService external;
+    class CW_Logs,CW_Metrics,CW_Alarms monitoring;
+```
+
+## System Layers
 
 ### 1. API Layer (api/)
-- Responsável pela integração com serviços externos
-- Implementa a comunicação com a API de futebol
-- Gerencia autenticação e requisições HTTP
+- Responsible for external service integration
+- Implements communication with the football API
+- Manages authentication and HTTP requests
 
 ### 2. Data Access Layer (data-access/)
-- Gerencia a conexão com o MongoDB
-- Implementa operações CRUD no banco de dados
-- Abstrai a complexidade do acesso aos dados
+- Manages MongoDB connection
+- Implements CRUD operations in the database
+- Abstracts data access complexity
 
 ### 3. Model Layer (model/)
-- Define a estrutura dos dados
-- Implementa validações e regras de negócio básicas
-- Cria modelos dinâmicos baseados no ID do bolão
+- Defines data structure
+- Implements basic business rules and validations
+- Creates dynamic models based on pool ID
 
 ### 4. Service Layer (service/)
-- Implementa a lógica de negócio principal
-- Calcula pontuações e pesos por rodada
-- Gerencia regras específicas do bolão
+- Implements main business logic
+- Calculates scores and weights per round
+- Manages pool-specific rules
 
 ### 5. Handler Layer (handler.js)
-- Ponto de entrada da função Lambda
-- Processa eventos HTTP
-- Coordena o fluxo entre as diferentes camadas
+- Lambda function entry point
+- Processes HTTP events
+- Coordinates flow between different layers
 
-## Fluxo de Dados
-1. Requisição HTTP recebida pelo Lambda
-2. Handler processa o evento e extrai parâmetros
-3. Service layer coordena a lógica de negócio
-4. Data Access layer persiste os dados
-5. Resposta é retornada ao cliente
+## Data Flow
+1. HTTP request received by Lambda
+2. Handler processes event and extracts parameters
+3. Service layer coordinates business logic
+4. Data Access layer persists data
+5. Response is returned to client
 
-## Considerações de Segurança
-- Credenciais armazenadas em variáveis de ambiente
-- Validação de entrada de dados
-- Tratamento de erros e exceções
-- Logs para auditoria
+## Security Considerations
+- Credentials stored in environment variables
+- Input data validation
+- Error and exception handling
+- Audit logs
 
-## Escalabilidade
-- Arquitetura serverless permite escalabilidade automática
-- Conexões com MongoDB gerenciadas eficientemente
-- Processamento assíncrono de apostas 
+## Scalability
+- Serverless architecture enables automatic scaling
+- MongoDB connections managed efficiently
+- Asynchronous bet processing 
