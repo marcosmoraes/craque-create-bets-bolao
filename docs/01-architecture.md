@@ -22,9 +22,8 @@ graph TB
 
         subgraph "MongoDB"
             Mongo[(MongoDB)]
-            Pools[(Pools Collection)]
-            Bets[(Bets Collection)]
-            Matches[(Matches Collection)]
+            Boloes[(boloes Collection)]
+            Bets[(league-specific Bet Collections)]
         end
     end
 
@@ -49,8 +48,50 @@ graph TB
 
     class APIG aws;
     class Handler,Service,Model,DataAccess lambda;
-    class Mongo,Pools,Bets,Matches db;
+    class Mongo,Boloes,Bets db;
     class FootballAPI external;
+```
+
+## Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant APIG as API Gateway
+    participant Handler as Lambda Handler
+    participant Service as Bet Service
+    participant Model as Bet Model
+    participant DA as Data Access
+    participant Mongo as MongoDB
+    participant FootballAPI as Football API
+
+    Client->>APIG: POST /create-bet
+    APIG->>Handler: HTTP Event
+    
+    Handler->>DA: connectToDatabase()
+    DA->>Mongo: Connect
+    
+    Handler->>DA: findBolaoByBubbleId()
+    DA->>Mongo: Query boloes collection
+    Mongo-->>DA: Return bolão
+    
+    Handler->>FootballAPI: getFixturesByLeagueAndSeason()
+    FootballAPI-->>Handler: Return fixtures
+    
+    Handler->>Service: calcularPesoPorRodada()
+    Service-->>Handler: Return weight
+    
+    Handler->>Model: createBetModelForLeague()
+    Model-->>Handler: Return model
+    
+    loop For each fixture
+        Handler->>Model: Create bet instance
+        Model->>Mongo: Save bet
+        Mongo-->>Model: Confirm save
+    end
+    
+    Handler-->>APIG: Return response
+    APIG-->>Client: HTTP Response
 ```
 
 ## System Layers
