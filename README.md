@@ -1,74 +1,95 @@
 # Create Bets Bolão
 
-Serviço responsável por criar e gerenciar apostas dos usuários em um sistema de bolão de futebol.
+A serverless service for creating and managing betting pools in the Craque application.
 
-## 🚀 Tecnologias
+## Description
+
+The Create Bets Bolão service is a serverless application built with AWS Lambda and Serverless Framework. It provides functionality for creating and managing betting pools, processing user bets, and calculating results.
+
+## Technologies
 
 - Node.js 18.x
-- MongoDB
 - Serverless Framework
 - AWS Lambda
-- API Football
-
-## 📋 Pré-requisitos
-
-- Node.js 18.x
+- AWS API Gateway
 - MongoDB
-- Serverless Framework CLI
-- Conta AWS (para deploy)
+- Express
+- Axios
+- Dotenv
 
-## 🔧 Instalação
+## Installation
 
-1. Clone o repositório
+1. Clone the repository:
 ```bash
-git clone [url-do-repositorio]
+git clone https://github.com/your-username/create-bets-bolao.git
+cd create-bets-bolao
 ```
 
-2. Instale as dependências
+2. Install dependencies:
 ```bash
 npm install
 ```
 
-3. Configure as variáveis de ambiente
+3. Configure environment variables:
 ```bash
 cp .env.example .env
-# Edite o arquivo .env com suas credenciais
 ```
 
-4. Execute localmente
+4. Edit the `.env` file with your credentials:
+```env
+MONGODB_URI=your_mongodb_uri
+AWS_REGION=your_aws_region
+AWS_ACCESS_KEY_ID=your_access_key
+AWS_SECRET_ACCESS_KEY=your_secret_key
+```
+
+## Documentation
+
+The project documentation is available in the `docs/` directory:
+
+- [Project Overview](docs/00-project-overview.md)
+- [System Architecture](docs/01-architecture.md)
+- [System Components](docs/02-components.md)
+- [Development Process](docs/03-development-process.md)
+- [API Documentation](docs/04-api-documentation.md)
+- [Progress Log](docs/05-progress-log.md)
+
+## Development
+
+1. Start the development server:
 ```bash
-serverless offline
+npm run dev
 ```
 
-## 📚 Documentação
+2. Run tests:
+```bash
+npm test
+```
 
-A documentação completa do projeto está disponível na pasta `docs/`:
+3. Build the project:
+```bash
+npm run build
+```
 
-- [Visão Geral](docs/00-project-overview.md)
-- [Arquitetura](docs/01-architecture.md)
-- [Componentes](docs/02-components.md)
-- [Processo de Desenvolvimento](docs/03-development-process.md)
-- [API](docs/04-api-documentation.md)
-- [Log de Progresso](docs/05-progress-log.md)
+4. Deploy to AWS:
+```bash
+npm run deploy
+```
 
-## 🛠️ Desenvolvimento
+## License
 
-### Comandos Úteis
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-- Desenvolvimento local: `serverless offline`
-- Testes: `npm test`
-- Linting: `npm run lint`
-- Deploy dev: `serverless deploy --stage dev`
-- Deploy prod: `serverless deploy --stage prod`
+## Contributing
 
-## 📝 Licença
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-Este projeto está sob a licença [MIT](LICENSE).
+---
 
-## 🤝 Contribuição
+## Portuguese Version
 
-1. Faça um fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
+[Versão em Português](docs/README.pt-BR.md)

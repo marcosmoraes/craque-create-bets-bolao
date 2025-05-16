@@ -1,38 +1,74 @@
-# Visão Geral do Projeto
+# Project Overview
 
-## Nome
-create-bets-bolao
+## Purpose
 
-## Descrição
-Este serviço é responsável por criar e gerenciar apostas dos usuários em um sistema de bolão. Ele integra-se com uma API de futebol para obter dados de partidas e permite que os usuários façam apostas em jogos específicos.
+The Create Bets Bolão service is responsible for creating and managing betting pools (bolões) in the Craque application. It provides functionality for creating, updating, and managing betting pools, as well as processing user bets.
 
-## Principais Funcionalidades
-- Criação de apostas para jogos de futebol
-- Integração com API de futebol para dados de partidas
-- Gerenciamento de bolões por usuário
-- Cálculo de pontuação baseado em rodadas
-- Sistema de pesos por rodada
+## Main Technologies
 
-## Stack Tecnológica
 - Node.js 18.x
-- MongoDB
 - Serverless Framework
 - AWS Lambda
-- API Football (integração externa)
+- AWS SQS
+- MongoDB
+- Express
+- Axios
+- Dotenv
 
-## Estrutura do Repositório
+## Project Structure
+
 ```
-create-bets-bolao/
-├── api/           # Integrações com APIs externas
-├── data-access/   # Camada de acesso a dados
-├── model/         # Modelos de dados
-├── service/       # Lógica de negócio
-├── handler.js     # Ponto de entrada da função Lambda
-└── serverless.yml # Configuração do Serverless Framework
+├── api/              # API endpoints
+├── data-access/      # Data access layer
+├── model/           # Data models
+├── service/         # Business logic
+├── docs/            # Documentation
+├── scripts/         # Utility scripts
+└── serverless.yml   # Serverless configuration
 ```
 
-## Variáveis de Ambiente
-- MONGODB_USERNAME: Credencial de acesso ao MongoDB
-- MONGODB_PASSWORD: Senha de acesso ao MongoDB
-- DATABASE: Nome do banco de dados
-- NODE_ENV: Ambiente de execução (development/production) 
+## Main Features
+
+1. Create betting pools
+2. Manage pool settings
+3. Process user bets
+4. Calculate results
+5. Generate reports
+
+## Development Environment
+
+### Prerequisites
+- Node.js 18.x
+- Serverless Framework CLI
+- AWS account
+- MongoDB instance
+
+### Configuration
+1. Clone the repository
+2. Install dependencies
+3. Configure environment variables
+4. Set up MongoDB connection
+
+## Local Execution
+
+1. Start the development server:
+```bash
+npm run dev
+```
+
+2. The service will be available at `http://localhost:3000`
+
+## Deployment
+
+1. Configure AWS credentials
+2. Deploy using Serverless:
+```bash
+serverless deploy
+```
+
+## Monitoring
+
+- CloudWatch logs
+- Execution metrics
+- Error tracking
+- Performance monitoring 

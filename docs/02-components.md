@@ -1,120 +1,124 @@
-# Componentes do Sistema
+# System Components
 
-## Modelos de Dados
+## Data Models
 
-### Bet
+### BettingPool
 ```typescript
-interface Bet {
-    fixture: {
-        bubbleId: string;
-        id: number;
-        referee: string;
-        timezone: string;
-        date: string;
-        timestamp: number;
-        periods: {
-            first: string;
-            second: string;
-        };
-        venue: {
-            id: number;
-            name: string;
-            city: string;
-        };
-        status: {
-            long: string;
-            short: string;
-            elapsed: number;
-        };
-    };
-    league: {
-        id: number;
+interface BettingPool {
+    id: string;
+    name: string;
+    description: string;
+    owner: {
+        id: string;
         name: string;
-        country: string;
-        logo: string;
-        flag: string;
-        season: number;
-        round: string;
+        email: string;
     };
-    bubbleId: string;
-    userId: string;
-    betTeams: {
-        home: {
-            teamId: number;
-            teamName: string;
-            goals: number | null;
-        };
-        away: {
-            teamId: number;
-            teamName: string;
-            goals: number | null;
-        };
+    participants: Participant[];
+    matches: Match[];
+    settings: {
+        maxParticipants: number;
+        entryFee: number;
+        prizeDistribution: PrizeDistribution[];
+        rules: string[];
     };
-    goals: {
-        home: number;
-        away: number;
+    status: 'active' | 'closed' | 'finished';
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+interface Participant {
+    id: string;
+    name: string;
+    email: string;
+    bets: Bet[];
+    points: number;
+    rank: number;
+}
+
+interface Match {
+    id: string;
+    homeTeam: string;
+    awayTeam: string;
+    date: Date;
+    status: 'scheduled' | 'in_progress' | 'finished';
+    result?: {
+        homeScore: number;
+        awayScore: number;
     };
-    pesoPorRodada: number;
-    pontosCategoria: {
-        placarPerdedor: number;
-        acertouResultado: number;
-        palpiteEstimulado: number;
-        variacaoDoRankingEmRelacaoAPosicaoAnterior: number;
-        tempoAcumulado: number;
-        palpitesDoUsuario: number;
+}
+
+interface Bet {
+    id: string;
+    matchId: string;
+    participantId: string;
+    prediction: {
+        homeScore: number;
+        awayScore: number;
     };
-    totalDePontos: number;
+    points: number;
+    status: 'pending' | 'correct' | 'incorrect';
+}
+
+interface PrizeDistribution {
+    position: number;
+    percentage: number;
 }
 ```
 
-## Serviços
+## Services
+
+### BettingPoolService (service/betting-pool-service.js)
+- `createPool(poolData)`: Creates a new betting pool
+- `updatePool(poolId, poolData)`: Updates pool data
+- `getPoolById(poolId)`: Retrieves pool by ID
+- `addParticipant(poolId, participantData)`: Adds a participant
+- `removeParticipant(poolId, participantId)`: Removes a participant
 
 ### BetService (service/bet-service.js)
-- `getRodada(round)`: Extrai o número da rodada da string
-- `calcularPesoPorRodada(rodada)`: Calcula o peso da rodada para pontuação
+- `createBet(betData)`: Creates a new bet
+- `updateBet(betId, betData)`: Updates bet data
+- `calculatePoints(betId)`: Calculates points for a bet
+- `processResults(matchId)`: Processes match results
 
-### FootballAPI (api/football-api.js)
-- `getFixturesByLeagueAndSeason(leagueId, season)`: Obtém jogos da liga e temporada
-
-### DataAccess (data-access/mongodb.js)
-- `connectToDatabase(username, password, database)`: Conecta ao MongoDB
-- `findBolaoByBubbleId(bubbleId)`: Busca bolão pelo ID
+### MatchService (service/match-service.js)
+- `getMatches(filters)`: Gets matches with filters
+- `updateMatch(matchId, matchData)`: Updates match data
+- `processResults(matchId)`: Processes match results
 
 ## Data Access
 
 ### MongoDB
-- Conexão configurada com credenciais do ambiente
-- Coleções dinâmicas por bolão (`bets-${bubbleId}`)
-- Índices para otimizar consultas por usuário e bolão
+- Connection configured with environment credentials
+- Collections:
+  - `betting_pools`: Pool data
+  - `participants`: Participant information
+  - `matches`: Match data
+  - `bets`: Bet information
+- Indexes:
+  - `betting_pools.id`: Unique index
+  - `participants.id`: Fast lookup index
+  - `matches.id`: Unique index
+  - `bets.id`: Unique index
 
-## Endpoints
+## Processing Flows
 
-### POST /create-bet
-- Método: POST
-- Handler: `handler.handler`
-- Parâmetros:
-  - `leagueId`: ID da liga
-  - `season`: Temporada
-  - `bubbleId`: ID do bolão
-  - `userId`: ID do usuário
-- Retorna: Status da criação das apostas
+### Pool Creation
+1. Validate pool data
+2. Create pool structure
+3. Initialize settings
+4. Save to database
+5. Return pool details
 
-## Fluxos de Processamento
+### Bet Processing
+1. Validate bet data
+2. Check match status
+3. Process bet
+4. Update statistics
+5. Confirm bet
 
-### Criação de Apostas
-1. Recebe parâmetros via POST
-2. Valida existência do bolão
-3. Obtém jogos da liga/temporada
-4. Cria modelo de apostas para o bolão
-5. Processa cada jogo:
-   - Cria aposta com dados do jogo
-   - Calcula peso da rodada
-   - Inicializa pontuações
-6. Salva apostas em paralelo
-7. Retorna status da operação
-
-### Tratamento de Erros
-- Captura erros individuais por aposta
-- Agrupa apostas com falha
-- Retorna lista de apostas não criadas
-- Mantém transação atômica por aposta 
+### Results Processing
+1. Receive match results
+2. Update match data
+3. Process all bets
+4. Calculate points
+5. Update rankings 
